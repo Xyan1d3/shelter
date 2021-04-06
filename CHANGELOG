@@ -20,9 +20,24 @@ v1.0.0(06/04/2021)
 v1.0.1(06/04/2021)
 
 [+] Now, It takes tun0 IP automatically. Incase not found prompts user for entering the nic for grabbing the IP.
-[+] Now, It automatically finds out open tcp port for sending shells.
+[+] Now, It automatically finds out avaliable tcp port for recieving shells on attacker box.
 
 ===============================================================================================
 v1.0.2(06/04/2021)
 
-[+] Added No handler feature, which will not start revshell handler. Will only copy the revshell payload.
+[+] Added --nohandler flag , which will not start revshell handler. Will only copy the revshell payload.
+
+===============================================================================================
+v1.0.3(06/04/2021)
+
+[+] Added -i flag to supply custom ip for generating reverseshell.
+[+] Added -p flag to supply custom port for generating reverseshell.
+
+===============================================================================================
+v1.0.4(07/04/2021)
+
+[+] Added regex check for valid ipv4 address, when it is entered as an argument.
+[+] Added regex check for checking valid port number.
+[+] Updated requirements.txt
+[+] Added a lot of comments.
+[+] Binary will be released.

