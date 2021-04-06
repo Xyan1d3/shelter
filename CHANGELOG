@@ -41,3 +41,11 @@ v1.0.4(07/04/2021)
 [+] Updated requirements.txt
 [+] Added a lot of comments.
 [+] Binary will be released.
+
+===============================================================================================
+v1.0.5(07/04/2021)
+
+[-] Bug fixed for crashing perl revshell.
+[-] Bug fixed for the check of the port range.
+
+[+] Added some fun text.

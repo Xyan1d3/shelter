@@ -8,6 +8,7 @@ import base64
 import netifaces
 import subprocess
 import re
+import random
 
 # Defining xterm-256color for usage in the script. Compatible for linux only.
 bold = "\033[1m"
@@ -37,7 +38,7 @@ parser = argparse.ArgumentParser(description=f"""
 /____/_/ /_/\___/_/\__/\___/_/     
 
 {end}{bold}{red}To boldly catch shells even the size of a meteorite.      
-{end}{bold}{orange}Version: v1.0.4 - 07/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=RawTextHelpFormatter)
+{end}{bold}{orange}Version: v1.0.5 - 07/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -87,19 +88,19 @@ py.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
 py2export.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
 pyexport.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
 socat.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
-bash.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-bashi.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-bash196.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-bashrl.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-bash5.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-bashudp.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-nc_mkfifo.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-perl.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-py2.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-py.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-py2export.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-pyexport.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
-socat.add_argument("-p",help="PORT for reverse shell.",metavar="8888")
+bash.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+bashi.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+bash196.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+bashrl.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+bash5.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+bashudp.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+nc_mkfifo.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+perl.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+py2.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+py.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+py2export.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+pyexport.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+socat.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
 
 args = parser.parse_args()
 
@@ -171,12 +172,16 @@ if args.module == "rev": # Checks for 1st pos arg if its rev.
                 aerr(f"Fatal Error : {args.i} is not a valid ipv4 address")
                 exit()
         if args.p != None: # Checks if port is supplied via arg and checks if it is in the valid port range.
-            if int(args.p) >= 65535 and int(args.p) < 0:
+            if int(args.p) >= 65535 or int(args.p) < 0:
                 aerr(f"Fatal Error : {args.p} is not a valid port number.")
+                exit()
         if args.i == None: # Using predefined variable to store the ip if not found by args.
             args.i = fetch_ip()
         if args.p == None: # Using predefined variable to store the port if not found by args.
             args.p = fetch_port()
+        if args.p == 80 or args.p == 443 :
+            port_choice_troll = ["Trying to slip through Firewall, You Naughty ;)","Time to be Sneaky Beaky Like...","Let's be a ghost for now.","Shh!! Firewall is sleeping, Better not wake him up."]
+            ap(f"{orange}{bold}{random.choice(port_choice_troll)}{end}")
         payload = shell_cpy(args.sub,args.i,args.p) # It will take 2nd positional args as language and store it in a variable.
         pyperclip.copy(payload) # Will copy the revshell payload into the clipboard.
         
