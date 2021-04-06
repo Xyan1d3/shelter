@@ -14,4 +14,10 @@ v1.0.0(06/04/2021)
     'py2export'
     'pyexport'
     'socat'
-[+] Currently only generates Reverse shell for IP 127.0.0.1 and port 8888 
+[+] Currently only generates Reverse shell for IP 127.0.0.1 and port 8888
+
+===============================================================================================
+v1.0.1(06/04/2021)
+
+[+] Now, It takes tun0 IP automatically. Incase not found prompts user for entering the nic for grabbing the IP.
+[+] Now, It automatically finds out open tcp port for sending shells.

