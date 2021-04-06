@@ -1,0 +1,17 @@
+v1.0.0(06/04/2021)
+
+[+] Added Reverse Shells of some languages.
+    'bash'
+    'bashi'
+    'bash196'
+    'bashrl'
+    'bash5'
+    'bashudp'
+    'nc_mkfifo'
+    'perl'
+    'py2'
+    'py'
+    'py2export'
+    'pyexport'
+    'socat'
+[+] Currently only generates Reverse shell for IP 127.0.0.1 and port 8888 
