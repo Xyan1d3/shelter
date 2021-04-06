@@ -1,0 +1,5 @@
+argparse
+pyperclip
+os
+base64
+netifaces
