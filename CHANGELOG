@@ -49,3 +49,28 @@ v1.0.5(07/04/2021)
 [-] Bug fixed for the check of the port range.
 
 [+] Added some fun text.
+
+===============================================================================================
+v1.1.0(08/04/2021)
+
+[+] Webshell interactor feature is out.
+[+] Added Webshell interactor flag -f which could be used to specify the filename [rev.php]
+[+] Added webshell interactor flag -p which could be used to specify the GET parameter [?cmd=]
+
+=====>Bugs
+[-] The url is not checked for 404.
+[-] --ssl and --nossl flags dont work on specifying http:// or https:// url.
+
+===============================================================================================
+v1.1.1(09/04/2021)
+
+[+] The Webshell interactor exits if the site is 404 or the page contains "Not Found" or "404"
+[+] Bug Fixed : Webshell interactor prints extra trailling line after the command output.
+
+===============================================================================================
+v1.1.2(19/04/2021)
+
+[+] WEB Interactor : Added a bulk load of comments.
+[+] WEB Interactor : Added Website availability 
+[+] Added a Keyboard interupt error handling to the whole code and displays KTHXBYE(Message is inspired from old versions of https://github.com/byt3bl33d3r/CrackMapExec)
+[+] WEB Interactor : Added exit and quit option on the webshell.
