@@ -74,3 +74,11 @@ v1.1.2(19/04/2021)
 [+] WEB Interactor : Added Website availability 
 [+] Added a Keyboard interupt error handling to the whole code and displays KTHXBYE(Message is inspired from old versions of https://github.com/byt3bl33d3r/CrackMapExec)
 [+] WEB Interactor : Added exit and quit option on the webshell.
+
+
+===============================================================================================
+v1.2.0(19/04.2021)
+
+[+] Added feature webrev which will get us a reverseshell form a GET webshell consisting <?php system($_GET[cmd]) ?>
+[+] Changed the -p for the GET parameter to -param from -p
+[+] Fixed Bug of Revshell which don't work without bash -c 
