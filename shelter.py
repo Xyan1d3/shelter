@@ -43,7 +43,7 @@ parser = argparse.ArgumentParser(description=f"""
 /____/_/ /_/\___/_/\__/\___/_/     
 
 {end}{bold}{red}To boldly catch shells even the size of a meteorite.      
-{end}{bold}{orange}Version: v1.2.0 - 19/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
+{end}{bold}{orange}Version: v1.2.1 - 28/04/21 - Bides Das @Xyan1d3 {end}""",formatter_class=argparse.RawTextHelpFormatter)
 
 subparser = parser.add_subparsers(title="Available Modules", dest="module")
 rev = subparser.add_parser("rev",help="Revshell to clipboard")
@@ -310,6 +310,7 @@ try:
                 port_choice_troll = ["Trying to slip through Firewall, You Naughty ;)","Time to be Sneaky Beaky Like...","Let's be a ghost for now.","Shh!! Firewall is sleeping, Better not wake him up."]
                 ap(f"{orange}{bold}{random.choice(port_choice_troll)}{end}")
             payload = shell_cpy(args.sub,args.i,args.p) # It will take 2nd positional args as language and store it in a variable.
+            ap(f"Copied reverseshell payload {payload}")
             pyperclip.copy(payload) # Will copy the revshell payload into the clipboard.
             
             if not args.nohandler: # It checks if the --nohandler flag not is supplied.
@@ -324,6 +325,7 @@ try:
             ainfo("No Payload specified : Falling back to base64 encoded bash -i revshell")
             ap("Starting up Shell Handler...")
             payload = shell_cpy("bash",fetch_ip(),fetch_port())
+            ap(f"Copied reverseshell payload {payload}")
             pyperclip.copy(payload)
             shell_handler(fetch_port(),"tcp")
 
