@@ -82,3 +82,8 @@ v1.2.0(19/04.2021)
 [+] Added feature webrev which will get us a reverseshell form a GET webshell consisting <?php system($_GET[cmd]) ?>
 [+] Changed the -p for the GET parameter to -param from -p
 [+] Fixed Bug of Revshell which don't work without bash -c 
+
+===============================================================================================
+v2.0.0(11/06/2021)
+
+[+] Major Codebase rework. Code's are now better organized for new features additions.
