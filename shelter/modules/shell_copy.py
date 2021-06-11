@@ -1,6 +1,6 @@
-from  helpers.ip_port_handler import fetch_ip
-from  helpers.ip_port_handler import fetch_port
-from helpers.stylize import *
+from shelter.helpers.ip_port_handler import fetch_ip
+from shelter.helpers.ip_port_handler import fetch_port
+from shelter.helpers.stylize import *
 
 import base64
 
