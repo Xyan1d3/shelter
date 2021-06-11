@@ -26,8 +26,8 @@ setuptools.setup(
     },
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: Apache 2.0 License",
-        "Operating System :: Linux",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX :: Linux",
     ],
     packages=setuptools.find_packages(),
     entry_points={"console_scripts": ["shelter = shelter.shelter:main"]},
