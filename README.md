@@ -1,7 +1,8 @@
 # Shelter
 ***
+[![Upload Python Package](https://github.com/Xyan1d3/shelter/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Xyan1d3/shelter/actions/workflows/python-publish.yml)
 
-Shelter the magical Shell Handler.
+**Shelter the magical Shell Handler.**
 ![](img/Pasted_image_20210428200307.png)
 ## What is it ?
 
