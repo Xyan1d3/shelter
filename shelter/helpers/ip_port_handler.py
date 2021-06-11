@@ -1,4 +1,4 @@
-from helpers.stylize import *
+from shelter.helpers.stylize import *
 
 import netifaces
 import subprocess

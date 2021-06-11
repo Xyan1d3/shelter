@@ -1,5 +1,5 @@
 import argparse
-from helpers.stylize import *
+from shelter.helpers.stylize import *
 
 web_args = {
         "url" : {
