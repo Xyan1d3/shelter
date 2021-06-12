@@ -1,6 +1,8 @@
 # Shelter
 ***
-[![Upload Python Package](https://github.com/Xyan1d3/shelter/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Xyan1d3/shelter/actions/workflows/python-publish.yml)
+[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)  [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
+
+![Supported Python versions](https://img.shields.io/badge/python-3.7+-blue.svg) ![Supported OS](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)  [![Upload Python Package](https://github.com/Xyan1d3/shelter/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Xyan1d3/shelter/actions/workflows/python-publish.yml)  ![PyPi Version](https://img.shields.io/pypi/v/pwnshelter.svg)  ![Licence](https://img.shields.io/pypi/l/pwnshelter.svg)  ![Wheel Status](https://pypip.in/wheel/pwnshelter/badge.svg) ![Github All Releases](https://img.shields.io/github/downloads/Xyan1d3/shelter/total.svg)  ![Issues](https://img.shields.io/github/issues/Xyan1d3/shelter)
 
 **Shelter the magical Shell Handler.**
 **A tool made for the Hackers by an Hacker.**
