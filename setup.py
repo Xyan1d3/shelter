@@ -11,7 +11,7 @@ shelter_version = (
     .stdout.decode("utf-8")
     .strip()
 )
-
+print("Hello")
 setuptools.setup(
     name="pwnshelter",
     version=shelter_version,
